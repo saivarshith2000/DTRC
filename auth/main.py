@@ -1,12 +1,11 @@
 from aiohttp import web
 from pprint import pprint
 
+# server config
+PORT = 8002
+
 # Temporary
 users = []
-
-async def handle(request):
-    print("Sending OK to reverse proxy")
-    return web.Response(text="OK")
 
 async def register(request):
     data = await request.post()
@@ -45,11 +44,12 @@ async def login(request):
     # If we are here, the user doesn't exist
     return web.Response(status=400, text="invalid email/password")
 
-app = web.Application()
-app.add_routes([web.get('/hearbeat', handle)])
-app.add_routes([web.post('/register', register)])
-app.add_routes([web.post('/login', login)])
+def main(port=PORT):
+    app = web.Application()
+    app.add_routes([web.post('/register', register)])
+    app.add_routes([web.post('/login', login)])
+    print(f"Started AUTH Service on port: {PORT}")
+    web.run_app(app, port=port)
 
 if __name__ == '__main__':
-    print("Started AUTH Service")
-    web.run_app(app, port=8081)
+    main()
