@@ -1,13 +1,44 @@
+import asyncio
+import aiohttp
 from aiohttp import web
 from pprint import pprint
+import sys
+import requests
 
 from auth import login, register
 from ticket import get_tickets, book_ticket
+from cmd_logging import append
 
 # server config
+rp_addr = "http://0.0.0.0:8000"
 PORT = 8001
+is_primary = False
+replicas = ["http://0.0.0.0:8002", "http://0.0.0.0:8003", "http://0.0.0.0:8001"] 
 
-def main(port=PORT):
+def main():
+    global is_primary
+    global replicas
+    port = PORT
+    if (len(sys.argv) > 1):
+        port = int(sys.argv[1])
+    if (port < 8001) or (port > 8003):
+        print("Invalid port number. port number ranges from 8001 to 8003")
+        return
+    # address of self
+    addr = f"http://0.0.0.0:{port}"
+    # remove self from list of replicas
+    replicas.remove(addr)
+    print(replicas)
+    # ask the reverse proxy to set self as leader
+    try:
+        resp = requests.get(f"{rp_addr}/setleader", params = {"addr": addr}).json()
+        primary = resp['primary']
+        if primary == addr:
+            is_primary = True
+    except Exception as e:
+        print(f"The reverse proxy server {rp_addr} can't be reached. please try again later")
+        return
+
     app = web.Application()
     # Auth routes
     app.add_routes([web.post('/register', register)])
@@ -15,8 +46,14 @@ def main(port=PORT):
     # Ticket routes
     app.add_routes([web.get('/tickets', get_tickets)])
     app.add_routes([web.post('/book', book_ticket)])
+    # Command log
+    app.add_routes([web.post('/append', append)])
+
     # start server
-    print(f"Started DRTC server on port: {PORT}")
+    if (is_primary):
+        print(f"Started PRIMARY DRTC server on port: {port}")
+    else:
+        print(f"Started REPLICA DRTC server on port: {port}")
     web.run_app(app, port=port)
 
 if __name__ == "__main__":
