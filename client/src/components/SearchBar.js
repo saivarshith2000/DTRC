@@ -1,6 +1,6 @@
 // Central Search Bar component
 import { React, useState } from "react";
-import Error from "./Error";
+import Message from "./Message";
 import axios from "axios";
 
 export default ({ setTickets }) => {
@@ -31,16 +31,16 @@ export default ({ setTickets }) => {
         }
     };
 
-    const renderError = () => {
+    const renderMessage = () => {
         if (error) {
-            return <Error error={error} />;
+            return <Message error={error} />;
         }
         return null;
     };
 
     return (
         <div className="mx-48 mt-20 text-center">
-            {renderError()}
+            {renderMessage()}
             <form onSubmit={onSubmit}>
                 {/* header */}
                 <div>

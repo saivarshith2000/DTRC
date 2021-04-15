@@ -1,8 +1,11 @@
 import { React, useState } from "react";
 import InputField from "../components/InputField";
-import Error from "../components/Error";
+import Message from "../components/Message";
+import axios from "axios";
+import { useHistory } from "react-router";
 
 export default () => {
+    let history = useHistory();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
@@ -15,34 +18,50 @@ export default () => {
             return;
         }
         setError("");
-        console.log(email);
-        console.log(password);
-        console.log("test");
+
+        // send login post request
+        const params = new URLSearchParams();
+        params.append("email", email);
+        params.append("password", password);
+        axios
+            .post("/login", params)
+            .then(function (response) {
+                // if there is no error, redirect to home
+                if (response.data.error === undefined) {
+                    history.push("/");
+                } else {
+                    // render any form errors otherwise
+                    setError(response.data.error);
+                }
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
     };
 
     // renders form errors
-    const renderError = () => {
+    const renderMessage = () => {
         if (error) {
-            return <Error error={error} />;
+            return <Message msg={error} />;
         }
         return null;
     };
     return (
         <div className="flex-col w-1/3 mx-auto mt-10">
-            {renderError()}
-            <p className="px-2 mx-auto mb-4 text-4xl font-semibold">Register</p>
+            {renderMessage()}
+            <p className="px-2 mx-auto mb-4 text-4xl font-semibold">Login</p>
             <form onSubmit={onSubmit}>
                 <InputField
                     name="email"
                     isPassword={false}
-                    fieldInfo="Enter your email"
+                    fieldInfo="Email"
                     field={email}
                     setField={setEmail}
                 />
                 <InputField
                     name="password"
                     isPassword={true}
-                    fieldInfo="Enter your password"
+                    fieldInfo="Password"
                     field={password}
                     setField={setPassword}
                 />
