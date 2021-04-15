@@ -4,16 +4,25 @@ from aiohttp import web
 from pprint import pprint
 import sys
 import requests
+import sqlite3
 
 from auth import login, register
 from ticket import get_tickets, book_ticket
-from cmd_logging import append
+from cmd_logging import commit
 
 # server config
 rp_addr = "http://0.0.0.0:8000"
 PORT = 8001
 is_primary = False
-replicas = ["http://0.0.0.0:8002", "http://0.0.0.0:8003", "http://0.0.0.0:8001"] 
+#replicas = ["http://0.0.0.0:8002", "http://0.0.0.0:8003", "http://0.0.0.0:8001"] 
+replicas = ["http://0.0.0.0:8002", "http://0.0.0.0:8001"] 
+
+# temporary function to create auth table
+def create_tables(db):
+    db.execute("create table if not exists User(username varchar(30) not null, email varchar(30) not null,password varchar(30) not null);")
+    db.commit()
+    print("created tables")
+
 
 def main():
     global is_primary
@@ -24,6 +33,17 @@ def main():
     if (port < 8001) or (port > 8003):
         print("Invalid port number. port number ranges from 8001 to 8003")
         return
+
+    # Check if database is accessible
+    try :
+        db = sqlite3.connect(f'{port}.db')
+        db.row_factory = sqlite3.Row
+        print("database access successful")
+        create_tables(db)
+    except Exception as e:
+        print(str(e))
+        return
+
     # address of self
     addr = f"http://0.0.0.0:{port}"
     # remove self from list of replicas
@@ -47,7 +67,10 @@ def main():
     app.add_routes([web.get('/tickets', get_tickets)])
     app.add_routes([web.post('/book', book_ticket)])
     # Command log
-    app.add_routes([web.post('/append', append)])
+    app.add_routes([web.post('/cmd', commit)])
+    # add database connection to the app instance
+    app['db'] = db
+    app['replicas'] = replicas
 
     # start server
     if (is_primary):
@@ -55,6 +78,7 @@ def main():
     else:
         print(f"Started REPLICA DRTC server on port: {port}")
     web.run_app(app, port=port)
+    db.close()
 
 if __name__ == "__main__":
     main()
