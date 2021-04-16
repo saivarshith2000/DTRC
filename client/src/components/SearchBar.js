@@ -20,7 +20,7 @@ export default ({ setTickets }) => {
             return;
         }
         try {
-            const response = await axios.get("/trains/", {
+            const response = await axios.post("/tickets", {
                 from,
                 to,
                 date,

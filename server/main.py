@@ -39,7 +39,7 @@ def main():
         db = sqlite3.connect(f'{port}.db')
         db.row_factory = sqlite3.Row
         print("database access successful")
-        create_tables(db)
+        # create_tables(db)
     except Exception as e:
         print(str(e))
         return
@@ -64,7 +64,7 @@ def main():
     app.add_routes([web.post('/register', register)])
     app.add_routes([web.post('/login', login)])
     # Ticket routes
-    app.add_routes([web.get('/tickets', get_tickets)])
+    app.add_routes([web.post('/tickets', get_tickets)])
     app.add_routes([web.post('/book', book_ticket)])
     # Command log
     app.add_routes([web.post('/cmd', commit)])

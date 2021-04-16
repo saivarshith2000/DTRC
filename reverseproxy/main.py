@@ -43,11 +43,11 @@ async def auth_login(request):
 async def get_tickets(request):
     if primary == None:
         return web.Response(status=500, text="ticket service down")
-    get_tick_url = primary + "/get_tickets"
+    get_tick_url = primary + "/tickets"
     session = aiohttp.ClientSession()
-    params = request.query
+    data = await request.json()
     try:
-        resp = await session.get(GET_TICKETS_URL, params=params)
+        resp = await session.post(get_tick_url, json=data)
         result = await resp.text()
         await session.close()
         return web.Response(body=result, status=resp.status, headers=resp.headers)
@@ -60,7 +60,7 @@ async def get_tickets(request):
 async def book_ticket(request):
     if primary == None:
         return web.Response(status=500, text="ticket service down")
-    book_ticket_url = primary + "/get_tickets"
+    book_ticket_url = primary + "/tickets"
     session = aiohttp.ClientSession()
     body = await request.post()
     try:
@@ -101,7 +101,7 @@ def main():
     app.add_routes([web.get('/setleader', setleader)])
     app.add_routes([web.post('/login', auth_login)])
     app.add_routes([web.post('/register', auth_register)])
-    app.add_routes([web.get('/tickets', get_tickets)])
+    app.add_routes([web.post('/tickets', get_tickets)])
     app.add_routes([web.post('/book', book_ticket)])
     print("Replicas: ")
     for replica in replicas:
