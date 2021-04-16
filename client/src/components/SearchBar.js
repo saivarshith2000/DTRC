@@ -9,12 +9,22 @@ export default ({ setTickets }) => {
     const [date, setDate] = useState("");
     const [error, setError] = useState("");
 
+    const format_date = (date) => {
+        if (date === "") {
+            return date;
+        }
+        const [year, month, day] = date.split("-");
+        const _date = day + "-" + month + "-" + year;
+        console.log(_date);
+        return day + "-" + month + "-" + year;
+    };
+
     const onSubmit = async (event) => {
         event.preventDefault();
 
         console.log("from: ", from);
         console.log("to: ", to);
-        console.log("date: ", date);
+        console.log("date: ", format_date(date));
         if (from === "" || to === "") {
             setError("FROM or TO is necessary");
             return;
@@ -23,7 +33,7 @@ export default ({ setTickets }) => {
             const response = await axios.post("/tickets", {
                 from,
                 to,
-                date,
+                date: format_date(date),
             });
             setTickets(response.data);
         } catch (e) {

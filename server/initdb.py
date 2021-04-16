@@ -10,7 +10,7 @@ def init(db):
     TRAINS = ["FALAKNUMA EXP", "EAST COST EXP", "SHALIMAR EXP", "SHATABDI EXP"]
     FROM = ["HYD", "DEL", "KOL"]
     TO = ["MMB", "AHM"]
-    DATES = [f"{x+16}-4-2021" for x in range(1,4)]
+    DATES = [f"{x+16}-04-2021" for x in range(1,4)]
     tid = 1000
     for t in TRAINS:
         for f in FROM:

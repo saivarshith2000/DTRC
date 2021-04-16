@@ -15,7 +15,7 @@ async def add_user(db, replicas, username, email, password):
         print(str(e))
         # If this failed, it means there is already a user with the same email
         return False
-    # Now send command to other replicas, if atleast one agrees -> commit it
+    # Now send command to other replicas, if atleast one disagrees -> abort
     session = aiohttp.ClientSession()
     accepted = []
     for replica in replicas:
