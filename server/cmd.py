@@ -1,7 +1,7 @@
 from aiohttp import web
 import json
 
-async def commit(request):
+async def tp_commit(request):
     db = request.app['db']
     data = await request.json()
     cmd = data["cmd"]

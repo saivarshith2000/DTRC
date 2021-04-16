@@ -8,14 +8,14 @@ import sqlite3
 
 from auth import login, register
 from ticket import get_tickets, book_ticket
-from cmd import commit
+from cmd import tp_commit
 
 # server config
 rp_addr = "http://0.0.0.0:8000"
 PORT = 8001
 is_primary = False
-#replicas = ["http://0.0.0.0:8002", "http://0.0.0.0:8003", "http://0.0.0.0:8001"] 
-replicas = ["http://0.0.0.0:8002", "http://0.0.0.0:8001"] 
+replicas = ["http://0.0.0.0:8002", "http://0.0.0.0:8003", "http://0.0.0.0:8001"] 
+# replicas = ["http://0.0.0.0:8002", "http://0.0.0.0:8001"] 
 
 # temporary function to create auth table
 def create_tables(db):
@@ -37,7 +37,7 @@ def main():
     # Check if database is accessible
     try :
         db = sqlite3.connect(f'{port}.db')
-        db.row_factory = sqlite3.Row
+        db.row_factory = sqlite3.Row # sqlite property to use row names instead of indices
         print("database access successful")
         # create_tables(db)
     except Exception as e:
@@ -67,7 +67,7 @@ def main():
     app.add_routes([web.post('/tickets', get_tickets)])
     app.add_routes([web.post('/book', book_ticket)])
     # Command log
-    app.add_routes([web.post('/cmd', commit)])
+    app.add_routes([web.post('/cmd', tp_commit)])
     # add database connection to the app instance
     app['db'] = db
     app['replicas'] = replicas
