@@ -37,7 +37,7 @@ export default () => {
         axios
             .post("/register", params)
             .then(function (response) {
-                // if there is no error, redirect to login
+                // if status
                 if (response.data.error === undefined) {
                     history.push("/login");
                 } else {

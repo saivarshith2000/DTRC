@@ -8,7 +8,7 @@ import sqlite3
 
 from auth import login, register
 from ticket import get_tickets, book_ticket
-from cmd_logging import commit
+from cmd import commit
 
 # server config
 rp_addr = "http://0.0.0.0:8000"
@@ -19,7 +19,7 @@ replicas = ["http://0.0.0.0:8002", "http://0.0.0.0:8001"]
 
 # temporary function to create auth table
 def create_tables(db):
-    db.execute("create table if not exists User(username varchar(30) not null, email varchar(30) not null,password varchar(30) not null);")
+    db.execute("create table if not exists User(username varchar(30) not null, email varchar(30) not null unique, password varchar(30) not null);")
     db.commit()
     print("created tables")
 

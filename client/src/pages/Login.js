@@ -4,7 +4,7 @@ import Message from "../components/Message";
 import axios from "axios";
 import { useHistory } from "react-router";
 
-export default () => {
+export default ({ userState, setUserState }) => {
     let history = useHistory();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -28,6 +28,12 @@ export default () => {
             .then(function (response) {
                 // if there is no error, redirect to home
                 if (response.data.error === undefined) {
+                    console.log(response.data);
+                    setUserState({
+                        loggedIn: true,
+                        email: response.data.email,
+                        username: response.data.username,
+                    });
                     history.push("/");
                 } else {
                     // render any form errors otherwise

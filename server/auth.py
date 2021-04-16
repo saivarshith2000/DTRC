@@ -3,9 +3,6 @@ import json
 import sqlite3
 import aiohttp
 
-# Temporary
-users = []
-
 # Adds a user to the database. Returns True if success, False otherwise
 async def add_user(db, replicas, username, email, password):
     cmd = f"insert into User values ('{username}','{email}','{password}');"
@@ -25,7 +22,6 @@ async def add_user(db, replicas, username, email, password):
         try:
             resp = await session.post(replica + "/cmd", json={'cmd': cmd})
             result = await resp.text()
-            print(result)
             if (result == "OK"):
                 accepted.append(replica)
             else:
@@ -41,23 +37,23 @@ async def add_user(db, replicas, username, email, password):
         # send rollback calls to other replicas
         for replica in accepted:
             try:
-                resp = await session.post(replica + "/cmd" + "/rollback")
-                accepted.append(replica)
+                resp = await session.post(replica + "/cmd", json={"cmd": "rollback"})
             except Exception as e:
                 print(f"server {replica} did not rollback -> inconsistency !!!")
         await session.close()
     else:
+        await session.close()
         return True
 
 # Check if a user exists in database. Returns email if true, None otherwise
 def check_user(db, email, password):
     # No need to contact replicas for READS !!!
     cursor = db.cursor()
-    row = cursor.execute(f"SELECT '{email}', '{password}' FROM User").fetchone()
+    row = cursor.execute(f"SELECT username FROM User WHERE email LIKE '{email}' AND password LIKE '{password}'").fetchone()
     if row is None:
         return None
     else:
-        return True
+        return row['username']
 
 async def register(request):
     db = request.app['db']
@@ -95,10 +91,9 @@ async def login(request):
         return web.json_response({"error": "invalid credentials"}, status=200)
 
     # Check if user exists in database
-    email = check_user(db, email, password) 
-    if email:
-        # return web.json_response({"msg": "success", "email": email, "username": username}, status=200)
-        return web.json_response({"msg": "success", "email": email}, status=200)
+    username = check_user(db, email, password) 
+    if username:
+        return web.json_response({"msg": "success", "email": email, "username": username}, status=200)
 
     # If we are here, the user doesn't exist
     return web.json_response({"error": "invalid email/password"}, status=200)
